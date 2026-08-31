@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPAY | POS QR Generator</title>
+    <!-- Include QRCode.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --primary: #002970;
+            --accent: #00b9f5;
+            --bg: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-dark: #1f2937;
+        }
+        
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: var(--text-dark); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        
+        .card { background: var(--card-bg); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        .card h2 { color: var(--primary); margin-bottom: 20px; font-size: 24px; }
+        
+        .input-group { text-align: left; margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4b5563; }
+        
+        input { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid #d1d5db; font-size: 15px; transition: 0.2s; }
+        input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0, 185, 245, 0.1); }
+        
+        .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, #00b9f5, #002970); color: white; border: none; border-radius: 8px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 10px; transition: transform 0.1s; }
+        .btn-primary:active { transform: scale(0.98); }
+        
+        .qr-display { margin-top: 25px; padding-top: 25px; border-top: 1px dashed #e5e7eb; display: none; flex-direction: column; align-items: center; }
+        #qrcode { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        
+        .qr-details { font-size: 14px; font-weight: 600; color: var(--primary); background: #e0f2fe; padding: 10px 20px; border-radius: 50px; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Generate Bill QR</h2>
+        
+        <div class="input-group">
+            <label>Receiver UPI ID (e.g., rmart@rpay)</label>
+            <input type="text" id="target-upi" placeholder="Enter store or user ID">
+        </div>
+        
+        <div class="input-group">
+            <label>Bill Amount (₹)</label>
+            <input type="number" id="bill-amount" placeholder="Enter exact amount">
+        </div>
+
+        <button class="btn-primary" onclick="generatePOSQR()">Generate QR Code</button>
+
+        <div id="qr-container" class="qr-display">
+            <div id="qrcode"></div>
+            <div class="qr-details" id="qr-text-label"></div>
+            <p style="font-size: 12px; color: #6b7280; margin-top: 10px;">Scan this with the RPAY app</p>
+        </div>
+    </div>
+
+    <script>
+        function generatePOSQR() {
+            const upiId = document.getElementById('target-upi').value.trim();
+            const amount = document.getElementById('bill-amount').value.trim();
+            const qrContainer = document.getElementById('qr-container');
+            const qrCanvas = document.getElementById('qrcode');
+
+            if (!upiId || !amount || amount <= 0) {
+                alert("Please enter a valid UPI ID and Amount.");
+                return;
+            }
+
+            // Clear previous QR code if it exists
+            qrCanvas.innerHTML = "";
+
+            // Format the string exactly as RPAY expects it: upi://pay?pa=shop@rpay&am=500
+            const dynamicQRString = `upi://pay?pa=${upiId}&am=${amount}`;
+
+            // Generate the new QR Code
+            new QRCode(qrCanvas, {
+                text: dynamicQRString,
+                width: 200,
+                height: 200,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+
+            // Update UI
+            document.getElementById('qr-text-label').innerText = `Paying ₹${parseFloat(amount).toFixed(2)} to ${upiId}`;
+            qrContainer.style.display = "flex";
+        }
+    </script>
+</body>
+</html>
